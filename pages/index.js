@@ -6,7 +6,7 @@ import {
   OrkutNostalgicIconSet,
 } from "../src/lib/AlurakutCommons";
 import { ProfileRelationsBoxWrapper } from "../src/components/ProfileRelations";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 function ProfileSideBar({ githubUser }) {
   return (
@@ -28,24 +28,9 @@ function ProfileSideBar({ githubUser }) {
 }
 
 export default function Home() {
-  const [comunidades, setComunidades] = useState([
-    {
-      id: new Date().toISOString(),
-      title: "Eu odeio acordar cedo",
-      imageUrl: "https://alurakut.vercel.app/capa-comunidade-01.jpg",
-    },
-  ]);
-
+  const [comunidades, setComunidades] = useState([]);
+  const [seguidores, setSeguidores] = useState([]);
   const githubUser = "fontanela";
-  const pessoasFavoritas = [
-    "fontanela",
-    "peas",
-    "omariosouto",
-    "juunegreiros",
-    "rafaballerini",
-    "marcobrunodev",
-    "felipefialho",
-  ];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -58,9 +43,38 @@ export default function Home() {
     };
 
     setComunidades([...comunidades, comunidade]);
-
-    console.log(comunidades);
   };
+
+  useEffect(() => {
+    fetch("https://api.github.com/users/fontanela/followers")
+      .then((res) => res.json())
+      .then((resJson) => {
+        setSeguidores(resJson);
+        console.log(seguidores[0]);
+      });
+  }, []);
+
+  function ProfileRelationsBox({ title, items }) {
+    return (
+      <ProfileRelationsBoxWrapper>
+        <h2 className="smallTitle">
+          {title} ({items.length})
+        </h2>
+        <ul>
+          {items.map((i) => {
+            return (
+              <li key={i.id}>
+                <a href={`/users/${i.login}`} key={i.id}>
+                  <img src={i.avatar_url} />
+                  <span>{i.login}</span>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      </ProfileRelationsBoxWrapper>
+    );
+  }
 
   return (
     <>
@@ -100,23 +114,7 @@ export default function Home() {
           className="profileRelationsArea"
           style={{ gridArea: "profileRelationsArea" }}
         >
-          <ProfileRelationsBoxWrapper>
-            <h2 className="smallTitle">
-              Pessoas da Comunidade ({pessoasFavoritas.length})
-            </h2>
-            <ul>
-              {pessoasFavoritas.map((itemAtual) => {
-                return (
-                  <li key={itemAtual}>
-                    <a href={`/users/${itemAtual}`} key={itemAtual}>
-                      <img src={`https://github.com/${itemAtual}.png`} />
-                      <span>{itemAtual}</span>
-                    </a>
-                  </li>
-                );
-              })}
-            </ul>
-          </ProfileRelationsBoxWrapper>
+          <ProfileRelationsBox title="Seguidores" items={seguidores} />
           <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">Comunidades ({comunidades.length})</h2>
             <ul>
